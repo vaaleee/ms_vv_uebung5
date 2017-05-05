@@ -45,14 +45,15 @@ class NaiveBayesClassifierNameGenderPrediction:
             observed = classifier.classify(feats)
             testsets[observed].add(index)
  
-        print('male precision:', precision(refsets['male'], testsets['male']))
-        print('male recall:', recall(refsets['male'], testsets['male']))
-        print('male F-measure:', f_measure(refsets['male'], testsets['male']))
-        print('female precision:', precision(refsets['female'], testsets['female']))
-        print('female recall:', recall(refsets['female'], testsets['female']))
-        print('female F-measure:', f_measure(refsets['female'], testsets['female']))
-        print('accuracy:', accuracy_)
+        male_p = 'male precision: \t {:.3}'.format(precision(refsets['male'], testsets['male']))
+        male_r = 'male recall: \t\t {:.3}'.format(recall(refsets['male'], testsets['male']))
+        male_F = 'male F-measure: \t {:.3}'.format(f_measure(refsets['male'], testsets['male']))
+        female_p = 'female precision: \t {:.3}'.format(precision(refsets['female'], testsets['female']))
+        female_r = 'female recall: \t\t {:.3}'.format(recall(refsets['female'], testsets['female']))
+        female_F = 'female F-measure: \t {:.3}'.format(f_measure(refsets['female'], testsets['female']))
+        accuracy_ = 'accuracy: \t\t {:.3}'.format(accuracy_)
 
+        return '{}\n{}\n{}\n{}\n{}\n{}\n{}'.format(male_p, male_r, male_F, female_p, female_r, female_F, accuracy_)
 
          
 
@@ -64,24 +65,30 @@ class NaiveBayesClassifierNameGenderPrediction:
         a name"""
 
         feature_dict = {
-            'ends_with_a': True if name.endswith('a') else False,
+            #'ends_with_a': True if name.endswith('a') else False,
             
-            'long_name': True if len(name) > 8 else False,
-            'ends_with_r': True if name.endswith('r') else False,
-            #'contains_ll': True if 'll' in name else False,
-            'ends_with_o': True if name.endswith('o') else False,
-            'ends_with_k': True if name.endswith('k') else False,
+            'long_name': True if len(name) > 9 else False,
+            #'ends_with_r': True if name.endswith('r') else False,
+            'contains_ll': True if 'll' in name else False,
+            #'ends_with_o': True if name.endswith('o') else False,
+            #'ends_with_k': True if name.endswith('k') else False,
             #'ends_with_p': True if name.endswith('p') else False,
-            'short_name': True if len(name) < 5 else False,
-            'ends_with_s': True if name.endswith('s') else False,
+            'short_name': True if len(name) < 4 else False,
+            'contains_a': True if 'a' in name else False,
+            #'ends_with_s': True if name.endswith('s') else False,
         }
 
         if len(name) >0:
+            #feature_dict['first_char_2'] = name[0]
             feature_dict['first_char'] = name[0]
             feature_dict['last_char'] = name[-1]
 
         if len(name) >3:
-            feature_dict['last_three'] = name[-3]
+            feature_dict['last_three'] = name[-3:]
+            feature_dict['last_two'] = name[-2:]
+            feature_dict['first_two'] = name[:2]
+            feature_dict['first_three'] = name[:3]
+            feature_dict['ia_in_name'] = True if 'ia' in name else False
 
         return feature_dict
         # TODO: Add further features to maximise the classifier's performance.
@@ -145,14 +152,15 @@ class NaiveBayesClassifierNameGenderPrediction:
             female_alles.append(word)
 
         random.shuffle(male_alles)
-        male_test_data = male_alles[:300]
-        male_train_data = male_alles[300:]
+        anzahl_maenner = len(male_alles)
+        male_test_data = male_alles[:round(anzahl_maenner*0.1)]
+        male_train_data = male_alles[round(anzahl_maenner*0.1):]
 
         
         random.shuffle(female_alles)
-
-        female_test_data = female_alles[:300]
-        female_train_data = female_alles[300:]
+        anzahl_frauen = len(female_alles)
+        female_test_data = female_alles[:round(anzahl_frauen*0.1)]
+        female_train_data = female_alles[round(anzahl_frauen*0.1):]
 
         return male_train_data, male_test_data, female_train_data, female_test_data
 
@@ -178,17 +186,12 @@ class NaiveBayesClassifierNameGenderPrediction:
 
         # create classifier with the training set
         classifier = NaiveBayesClassifier.train(train_set)
-        # erste Tests:
-        #print('Shrek: \t', classifier.classify(self.gender_features('Shrek')))
-        #print('Annabelle: \t', classifier.classify(self.gender_features('Annabelle')))
-        #print('Klo: \t', classifier.classify(self.gender_features('Marco')))
-        #print('Muellabfuhr: \t', classifier.classify(self.gender_features('Cheryl')))
 
         # print the evaluation with the precision, recall and f-measure
-        self.evaluation(test_set, classifier)
+        print(self.evaluation(test_set, classifier))
         
         # print the 10 most informative features 
-        # classifier.show_most_informative_features(10)
+        classifier.show_most_informative_features(15)
 
 
 if __name__ == '__main__':
