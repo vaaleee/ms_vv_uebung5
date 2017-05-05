@@ -1,9 +1,8 @@
-#!/urs/bin/env python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# FS17, PCL II, Übung 5
-# Aufgabe 2
-# Valentina Vogel & Martina Stüssi
 
+# Vorlage
+# Uebung 5, Aufgabe 2
 """This module uses a naive bayes classifier to identify the gender of names"""
 
 import random
@@ -35,6 +34,8 @@ class NaiveBayesClassifierNameGenderPrediction:
         # TODO: Evaluate the classifier with the test set. Print the
         # overall classifier accuracy, as well as precision, recall and
         # f-measure for male and female
+
+
         
     @staticmethod
     def gender_features(name):
@@ -42,7 +43,12 @@ class NaiveBayesClassifierNameGenderPrediction:
         a name"""
         return {
             'ends_with_a': True if name.endswith('a') else False,
-            'first_char': name[0],
+            #'first_char': name[0],
+            'long_name': True if len(name) > 8 else False,
+            'ends_with_r': True if name.endswith('r') else False,
+            'contains_ll': True if 'll' in name else False,
+            'ends_with_o': True if name.endswith('o') else False,
+            'short_name': True if len(name) < 5 else False,
         }
         # TODO: Add further features to maximise the classifier's performance.
 
@@ -55,6 +61,40 @@ class NaiveBayesClassifierNameGenderPrediction:
         # TODO: return two feature, label lists, one for training and one 
         # for testing. Each list should be in the form 
         # [({feature1_name:feature1_value, ...}, label), ...]
+
+        train_feature_list = []
+        test_feature_list = []
+
+        train_dict = {}
+        test_dict = {}
+
+        for male_name in male_training_data:
+            train_dict[male_name] = 'male'
+
+        for female_name in female_training_data:
+            train_dict[female_name] = 'female'
+
+        for name in train_dict:
+            train_feature_list.append((self.gender_features(name), train_dict[name]))
+
+        for male_name in male_test_data:
+            test_dict[male_name] = 'male'
+
+        for female_name in female_test_data:
+            test_dict[female_name] = 'female'
+
+        for name in test_dict:
+            test_feature_list.append((self.gender_features(name), test_dict[name]))
+
+
+        return train_feature_list, test_feature_list
+            
+
+        #for male_name in male_training_data:
+            #train_feature_list.append((gender_features(male_name), 'male'))
+        #for female_name in female_training_data:
+            #train_feature_list.append((gender_features(female_name), 'female'))
+
     
     @staticmethod
     def get_train_and_test_data(male_data, female_data):
@@ -71,14 +111,14 @@ class NaiveBayesClassifierNameGenderPrediction:
             female_alles.append(word)
 
         random.shuffle(male_alles)
-        male_test_data = male_alles[50:]
-        male_train_data = male_alles[:50]
+        male_test_data = male_alles[:300]
+        male_train_data = male_alles[300:]
 
         
         random.shuffle(female_alles)
 
-        female_test_data = female_alles[50:]
-        female_train_data = female_alles[:50]
+        female_test_data = female_alles[:300]
+        female_train_data = female_alles[300:]
 
         return male_train_data, male_test_data, female_train_data, female_test_data
 
@@ -93,19 +133,21 @@ class NaiveBayesClassifierNameGenderPrediction:
         male_train_data, male_test_data, female_train_data, female_test_data = \
             self.get_train_and_test_data(male_data, female_data)
 
+
         # get the training and test set for the classifier and the evaluation
-        """train_set, test_set = self.get_training_and_test_labeled_features(
+        train_set, test_set = self.get_training_and_test_labeled_features(
             female_train_data, male_train_data, female_test_data,
             male_test_data)
+
 
         # create classifier with the training set
         classifier = NaiveBayesClassifier.train(train_set)
 
         # print the evaluation with the precision, recall and f-measure
-        self.evaluation(test_set, classifier)
+        #self.evaluation(test_set, classifier)
         
         # print the 10 most informative features 
-        classifier.show_most_informative_features(1)"""
+        #classifier.show_most_informative_features(1)
 
 
 if __name__ == '__main__':
